@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hitung Pengeluaranmu</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(160deg, #FDFBF7, #FAF3E0, #F4E2B8, #F2D98D);
+            background-size: 200% 200%;
+            animation: softBeigeMove 20s ease infinite;
+            background-attachment: fixed;
+            color: #111;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        @keyframes softBeigeMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            margin-top: 100px;
+            font-size: 26px;
+            font-weight: 600;
+            color: #3C2F1E;
+            letter-spacing: 0.5px;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            width: 400px;
+            margin: 40px auto;
+            text-align: left;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            margin: 15px 0 8px 10px;
+            color: #111;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: #ececec;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            background-color: #f6f2e9;
+            box-shadow: 0 0 6px rgba(242, 217, 141, 0.6);
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        button {
+            background-color: #EACB6E;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(234, 203, 110, 0.3);
+        }
+
+        button:hover {
+            background-color: #D7B957;
+            box-shadow: 0 4px 10px rgba(200, 170, 80, 0.5);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            background-color: transparent;
+            color: #3C2F1E;
+            border: 2px solid #E0C97A;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #E0C97A;
+            color: white;
+            box-shadow: 0 3px 6px rgba(200, 170, 80, 0.4);
+        }
+
+        .result-box {
+            margin-top: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .result-box p {
+            font-size: 15px;
+            color: #111;
+            margin: 8px 0;
+        }
+
+        .highlight {
+            color: #EACB6E;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hitung dulu ya!</h1>
+
+    <form method="POST" action="/hitung_pengeluaran" class="form-card">
+        <label>Berapa uang total pengeluaranmu bulan lalu?</label>
+        <input type="text" name="pengeluaran_lalu" id="pengeluaran_lalu" placeholder="contoh: Rp 3.000.000" required>
+
+        <label>Berapa uang yang ingin kamu tabungkan bulan ini?</label>
+        <input type="text" name="tabungan" id="tabungan" placeholder="contoh: Rp 500.000" required>
+
+        <div class="btn-container">
+            <button type="submit">Lanjut →</button>
+        </div>
+
+        <!-- Tombol kembali ke halaman utama -->
+        <div class="btn-container">
+            <a href="/" class="back-btn">← Kembali ke Halaman Utama</a>
+        </div>
+    </form>
+
+    {% if total %}
+    <div class="result-box">
+        <p>Total pengeluaran bulan ini: <span class="highlight">Rp{{ "{:,.0f}".format(total) }}</span></p>
+        <a href="/?biaya_tetap={{ total }}"><button>Gunakan ke Kalkulator Pinjaman</button></a>
+    </div>
+    {% endif %}
+
+    <script>
+        // === Format input jadi Rp. ===
+        function formatRupiah(angka) {
+            let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+            return 'Rp ' + rupiah;
+        }
+
+        function unformatRupiah(value) {
+            return value.replace(/[^0-9]/g, '');
+        }
+
+        function applyFormat(id) {
+            const input = document.getElementById(id);
+            input.addEventListener('input', function() {
+                const unformatted = unformatRupiah(this.value);
+                this.value = formatRupiah(unformatted);
+            });
+        }
+
+        applyFormat('pengeluaran_lalu');
+        applyFormat('tabungan');
+
+        document.querySelector("form").addEventListener("submit", function() {
+            document.getElementById("pengeluaran_lalu").value = unformatRupiah(document.getElementById("pengeluaran_lalu").value);
+            document.getElementById("tabungan").value = unformatRupiah(document.getElementById("tabungan").value);
+        });
+    </script>
+</body>
+</html>

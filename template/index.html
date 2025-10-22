@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cek Kelayakan Pinjamanmu Sekarang!</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(160deg, #FDFBF7, #FAF3E0, #F4E2B8);
+            background-size: 200% 200%;
+            animation: softBeigeMove 20s ease infinite;
+            background-attachment: fixed;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            color: #111;
+        }
+
+        @keyframes softBeigeMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            margin-top: 60px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        form {
+            margin-top: 60px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 250px;
+            padding: 12px;
+            border: none;
+            background-color: #eee;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            background-color: #f9f4e5;
+            box-shadow: 0 0 6px rgba(234, 203, 110, 0.4);
+        }
+
+        .middle-input {
+            margin: 20px 0 40px 0;
+        }
+
+        .middle-input label {
+            display: block;
+            font-weight: 500;
+            font-size: 15px;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .middle-input input {
+            width: 320px;
+            padding: 12px;
+            border: none;
+            background-color: #eee;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* === Bullet Tenor === */
+        .tenor-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tenor-container p {
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .tenor-track {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            align-items: center;
+            width: 65%;
+            position: relative;
+        }
+
+        .tenor-track::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #ccc;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .tenor-track input[type="radio"] {
+            display: none;
+        }
+
+        .tenor-track label {
+            position: relative;
+            z-index: 1;
+            width: 22px;
+            height: 22px;
+            margin: 0 auto;
+            background: #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .tenor-track input[type="radio"]:checked + label {
+            background: #EACB6E;
+            box-shadow: 0 0 12px rgba(234, 203, 110, 0.7);
+            transform: scale(1.05);
+        }
+
+        .tenor-labels {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            width: 65%;
+            text-align: center;
+            font-size: 13px;
+            color: #333;
+            margin-top: 6px;
+        }
+
+        button {
+            background-color: #EACB6E;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 40px;
+            font-size: 15px;
+            box-shadow: 0 3px 6px rgba(234, 203, 110, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #D7B957;
+            box-shadow: 0 4px 10px rgba(200, 170, 80, 0.5);
+        }
+
+        .pengeluaran-link {
+            margin-top: 40px;
+            font-size: 14px;
+        }
+
+        .pengeluaran-link a {
+            color: #EACB6E;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .pengeluaran-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cek Kelayakan Pinjamanmu Sekarang!</h1>
+
+    <form method="POST" action="/hasil">
+        <div class="input-row">
+            <div class="input-group">
+                <label>GAJI DITERIMA</label>
+                <input type="text" name="gaji" id="gaji" placeholder="Rp 5.000.000" required>
+            </div>
+
+            <div class="input-group">
+                <label>Total pengeluaran/bln</label>
+                <input type="text" name="biaya_tetap" id="biaya_tetap"
+                    placeholder="Rp 2.500.000"
+                    value="{{ biaya_tetap }}"
+                    required>
+            </div>
+        </div>
+
+        <div class="middle-input">
+            <label>uang yang ingin diajukan untuk cicilan/pinjaman</label>
+            <input type="text" name="jumlah_pengajuan" id="jumlah_pengajuan" placeholder="Rp 10.000.000" required>
+        </div>
+
+        <!-- Bullet Tenor Section -->
+        <div class="tenor-container">
+            <p>Tenor pinjaman</p>
+            <div class="tenor-track">
+                <input type="radio" id="t2" name="tenor" value="2" checked><label for="t2"></label>
+                <input type="radio" id="t4" name="tenor" value="4"><label for="t4"></label>
+                <input type="radio" id="t6" name="tenor" value="6"><label for="t6"></label>
+                <input type="radio" id="t12" name="tenor" value="12"><label for="t12"></label>
+                <input type="radio" id="t24" name="tenor" value="24"><label for="t24"></label>
+                <input type="radio" id="t36" name="tenor" value="36"><label for="t36"></label>
+                <input type="radio" id="t48" name="tenor" value="48"><label for="t48"></label>
+            </div>
+            <div class="tenor-labels">
+                <span>2 bln</span>
+                <span>4 bln</span>
+                <span>6 bln</span>
+                <span>12 bln</span>
+                <span>24 bln</span>
+                <span>36 bln</span>
+                <span>48 bln</span>
+            </div>
+        </div>
+
+        <button type="submit">Hitung Sekarang</button>
+    </form>
+
+    <div class="pengeluaran-link">
+        Tidak tahu pengeluaran perbulan anda? 
+        <a href="/pengeluaran">Klik di sini</a>
+    </div>
+
+    <script>
+        // === Format input jadi Rp. ===
+        function formatRupiah(angka) {
+            let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+            return 'Rp ' + rupiah;
+        }
+
+        function unformatRupiah(value) {
+            return value.replace(/[^0-9]/g, '');
+        }
+
+        function applyFormat(inputId) {
+            const input = document.getElementById(inputId);
+            input.addEventListener('input', function () {
+                const value = unformatRupiah(this.value);
+                this.value = formatRupiah(value);
+            });
+        }
+
+        applyFormat('gaji');
+        applyFormat('biaya_tetap');
+        applyFormat('jumlah_pengajuan');
+
+        document.querySelector("form").addEventListener("submit", function () {
+            document.getElementById("gaji").value = unformatRupiah(document.getElementById("gaji").value);
+            document.getElementById("biaya_tetap").value = unformatRupiah(document.getElementById("biaya_tetap").value);
+            document.getElementById("jumlah_pengajuan").value = unformatRupiah(document.getElementById("jumlah_pengajuan").value);
+        });
+    </script>
+</body>
+</html>

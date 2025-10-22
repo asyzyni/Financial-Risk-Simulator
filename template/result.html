@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Analisis Keuanganmu</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(160deg, #FDFBF7, #FAF3E0, #F4E2B8, #F2D98D);
+            background-size: 200% 200%;
+            animation: softBeigeMove 20s ease infinite;
+            background-attachment: fixed;
+            color: #111;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        @keyframes beigeGoldGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            margin-top: 60px;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .status {
+            margin: 20px auto;
+        }
+
+        .status span {
+            font-size: 30px;
+            vertical-align: middle;
+        }
+
+        .status h2 {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .highlight {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .bullet {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .bullet span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #111;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .note {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #333;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 35px;
+            background-color: #f59e0b;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #b45309;
+        }
+    </style>
+</head>
+<body>
+    <h1>Yuk Lihat Hasil Analisis Keuanganmu</h1>
+
+    {% if error %}
+        <p style="color: red; font-weight: bold;">{{ error }}</p>
+    {% else %}
+        <div class="status">
+            {% if kategori == "🟢 Aman" %}
+                <span>🟢</span><h2>Aman</h2>
+            {% elif kategori == "🟡 Hampir Aman" %}
+                <span>🟡</span><h2>Hampir Aman</h2>
+            {% else %}
+                <span>🔴</span><h2>Risiko Tinggi</h2>
+            {% endif %}
+        </div>
+
+        <p>{{ pesan }}</p>
+
+        <div class="bullet"><span></span> <p>Uang sisa bulanan anda adalah : <b>Rp{{ "{:,.0f}".format(uang_sisa).replace(",", ".") }}</b></p></div>
+        <div class="bullet"><span></span> <p>cicilan yang harus anda bayar : <b>Rp{{ "{:,.0f}".format(cicilan_perbulan).replace(",", ".") }}</b></p></div>
+
+        <div class="note">
+            {% if kategori == "🟢 Aman" %}
+                Uang sisa bulanan anda lebih dari 60% gaji anda — ini berarti kondisi finansial anda sehat dan stabil 💪.
+            {% elif kategori == "🟡 Hampir Aman" %}
+                Uang sisa bulanan anda sekitar 30–60% dari gaji, masih aman, tapi sebaiknya jangan menambah pinjaman baru.
+            {% else %}
+                Uang sisa bulanan anda kurang dari 30% uang gaji anda, yang dapat mengganggu kestabilan ekonomi anda ⚠️.
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <a href="/" class="btn-back">← Kembali ke Halaman Utama</a>
+</body>
+</html>
