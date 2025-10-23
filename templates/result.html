@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hasil Analisis Pinjaman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --shadow: 0 8px 24px rgba(16,24,40,0.06);
+      --border:#e5e7eb;
+      --muted:#6b7280;
+      --title:#111827;
+      --bg:linear-gradient(180deg,#f8fafc 0%, #eef2ff 100%);
+    }
+    *{box-sizing:border-box;}
+    body{
+      font-family:'Poppins',sans-serif;
+      background:var(--bg);
+      margin:0;
+      padding:48px;
+      color:var(--title);
+    }
+    .wrap{
+      max-width:1120px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:40px;
+    }
+    h2{text-align:center;color:#1e3a8a;margin-bottom:20px;}
+    .muted{color:var(--muted);}
+    .row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+    .card{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      box-shadow:0 2px 8px rgba(0,0,0,0.05);
+      padding:20px;
+    }
+    .card.blue{background:linear-gradient(90deg,#3b82f6,#2563eb);color:#fff;border:none;}
+    .label{color:#6b7280;font-weight:600;font-size:14px;}
+    .value{font-weight:600;font-size:16px;margin-top:4px;}
+    .grid-2-1{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:24px;
+      margin-top:24px;
+    }
+    .section{display:flex;align-items:center;gap:8px;color:#0ea5e9;font-weight:600;margin:20px 0 10px;}
+    .section.green{color:#059669;}
+    .section.orange{color:#f59e0b;}
+    .result-box{
+      border:1px solid #a7f3d0;
+      background:#ecfdf5;
+      border-radius:14px;
+      padding:18px;
+      margin-top:10px;
+    }
+    .result-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    .result-cell{
+      border:1px solid var(--border);
+      background:#f9fafb;
+      border-radius:12px;
+      padding:14px;
+    }
+
+    /* Risiko Box */
+    .risk{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:22px;
+      text-align:center;
+    }
+    .risk-icon{
+      width:84px;
+      height:84px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:36px;
+      color:#fff;
+      margin:0 auto 10px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    .risk-label{font-weight:600;margin:6px 0 10px;}
+    .pill{
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#f3f4f6;
+      color:#111827;
+      font-weight:600;
+      font-size:13px;
+      margin-bottom:8px;
+    }
+    .bar{
+      height:10px;
+      background:#e5e7eb;
+      border-radius:8px;
+      overflow:hidden;
+    }
+    .bar > div{
+      height:10px;
+      border-radius:8px;
+      transition:width .4s ease;
+    }
+    .bar-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:10px 0 6px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .btn{
+      display:inline-block;
+      margin:32px auto 0;
+      background:#2563eb;
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      padding:12px 22px;
+      font-weight:600;
+      text-decoration:none;
+    }
+    .btn:hover{background:#1e40af;}
+    @media (max-width:900px){.row,.grid-2-1,.result-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    {% if error %}
+      <h2 style="color:#ef4444;">Terjadi Kesalahan</h2>
+      <p class="muted center">{{ error }}</p>
+      <p class="center"><a class="btn" href="/">← Kembali ke Form</a></p>
+    {% else %}
+      <div class="center" style="margin-bottom:22px">
+        <div style="width:72px;height:72px;border-radius:18px;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;margin:0 auto 8px auto">✓</div>
+        <h2>Analisis Pinjaman Selesai</h2>
+        <p class="muted">Berikut adalah hasil analisis kelayakan pinjaman Anda</p>
+      </div>
+
+      <!-- Top Cards -->
+      <div class="row">
+        <div class="card">
+          <p class="label">Gaji Diterima</p>
+          <p class="value">{{ gaji }}</p>
+        </div>
+        <div class="card">
+          <p class="label">Pengeluaran Tetap</p>
+          <p class="value">{{ biaya_tetap }}</p>
+        </div>
+        <div class="card blue">
+          <p class="label">Sisa Uang Bulanan</p>
+          <p class="value">{{ sisa_uang }}</p>
+        </div>
+      </div>
+
+      <div class="grid-2-1">
+        <!-- Kiri -->
+        <div>
+          <div class="section">📄 Detail Pengajuan Pinjaman</div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <div>
+                <p class="label">Jenis Pinjaman</p>
+                <p class="value">
+                  {% if jenis_pinjaman == 'cicilan' %}
+                    Cicilan Barang (bunga per bulan)
+                  {% else %}
+                    Pinjaman Bank (bunga per tahun)
+                  {% endif %}
+                </p>
+              </div>
+              <div>
+                <p class="label">Tenor</p>
+                <p class="value">{{ tenor }} Bulan</p>
+              </div>
+              <div>
+                <p class="label">Bunga</p>
+                <p class="value">{{ bunga_tahunan }}%</p>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <p class="label">Jumlah Pinjaman</p>
+              <p class="value">{{ jumlah_pengajuan }}</p>
+            </div>
+            {% if tujuan %}
+            <div style="margin-top:10px;color:#6b7280;font-size:14px;">
+              Tujuan: <span style="font-weight:600;color:#111827;">{{ tujuan }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="section green">📈 Hasil Perhitungan</div>
+          <div class="card">
+            <div class="result-box">
+              <p style="color:#065f46;font-size:14px;margin-bottom:4px">Cicilan per Bulan</p>
+              <p class="value" style="color:#065f46">{{ cicilan }}</p>
+            </div>
+            <div class="result-grid">
+              <div class="result-cell">
+                <p class="label">Total Bunga</p>
+                <p class="value">{{ total_bunga }}</p>
+              </div>
+              <div class="result-cell">
+                <p class="label">Total Pembayaran</p>
+                <p class="value">{{ total_pembayaran }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kanan -->
+        <div>
+          <div class="section orange">⚠️ Penilaian Risiko</div>
+          <div class="risk card">
+            <div class="risk-icon" style="background: {{ warna }}">{{ icon }}</div>
+            <div class="risk-label">Level Risiko</div>
+            <div class="pill">{{ risiko }}</div>
+
+            <div class="bar-row"><span>Cicilan / Gaji</span><span>{{ rasio_gaji }}%</span></div>
+            <div class="bar"><div style="width: {{ rasio_gaji }}%; background: {{ warna }}"></div></div>
+
+            <div class="bar-row"><span>Cicilan / Sisa Uang</span><span>{{ rasio_sisa }}%</span></div>
+            <div class="bar"><div style="width: {{ rasio_sisa }}%; background: {{ warna }}"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center">
+        <a href="/" class="btn">🔄 Analisis Ulang</a>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

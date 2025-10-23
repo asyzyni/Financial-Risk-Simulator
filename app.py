@@ -1,130 +1,91 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
+import math
 
-app = Flask(__name__, template_folder="template")
+app = Flask(__name__)
 
-# =========================
-# 🏠 Halaman Utama
-# =========================
-@app.route("/")
-def home():
-    biaya_tetap = request.args.get("biaya_tetap", "")
+def format_currency(value):
+    """Format angka ke format akuntansi Rp"""
+    try:
+        return f"Rp {round(value):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return "Rp 0"
 
-    if biaya_tetap:
-        try:
-            biaya_tetap = f"Rp {float(biaya_tetap):,.0f}".replace(",", ".")
-        except ValueError:
-            pass
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    return render_template("index.html", biaya_tetap=biaya_tetap)
-# =========================
-# 💰 Hasil Analisis Pinjaman
-# =========================
-@app.route("/hasil", methods=["POST"])
+@app.route('/hasil', methods=['POST'])
 def hasil():
     try:
-        gaji = float(request.form.get("gaji", 0))
-        biaya_tetap = float(request.form.get("biaya_tetap", 0))
-        jumlah_pengajuan = float(request.form.get("jumlah_pengajuan", 0))
-        tenor = int(request.form.get("tenor", 0))
-    except ValueError:
-        return render_template("result.html", error="⚠️ Input tidak valid! Pastikan semua kolom diisi dengan angka.")
+        # Ambil data form
+        jenis_pinjaman = request.form.get('jenis_pinjaman', 'bank')
+        gaji = float(request.form.get('gaji', 0) or 0)
+        biaya_tetap = float(request.form.get('biaya_tetap', 0) or 0)
+        jumlah_pengajuan = float(request.form.get('jumlah_pengajuan', 0) or 0)
+        bunga_tahunan = float(request.form.get('bunga_tahunan', 0) or 0)
+        tenor = int(request.form.get('tenor', 0) or 0)
+        tujuan = request.form.get('tujuan', '').strip()
 
-    # Validasi input
-    if gaji <= 0 or biaya_tetap < 0 or jumlah_pengajuan <= 0:
-        return render_template("result.html", error="⚠️ Nilai tidak boleh kosong atau negatif!")
+        if gaji <= 0 or jumlah_pengajuan <= 0 or tenor <= 0:
+            return render_template('result.html', error="⚠️ Mohon isi semua kolom dengan benar.")
 
-    uang_sisa = gaji - biaya_tetap
-    if uang_sisa <= 0:
-        return render_template("result.html", error="⚠️ Pengeluaran Anda melebihi gaji!")
+        # Konversi bunga
+        if jenis_pinjaman == 'bank':
+            bunga_bulanan = bunga_tahunan / 100 / 12
+        else:
+            bunga_bulanan = bunga_tahunan / 100
 
-    # Tentukan bunga bulanan berdasarkan jumlah pinjaman
-    if jumlah_pengajuan <= 5_000_000:
-        bunga_per_bulan = 0.025
-        label_bunga = "Fintech kecil (2.5%/bulan)"
-    elif jumlah_pengajuan <= 20_000_000:
-        bunga_per_bulan = 0.018
-        label_bunga = "Pinjaman menengah (1.8%/bulan)"
-    else:
-        bunga_per_bulan = 0.010
-        label_bunga = "Pinjaman besar (1.0%/bulan)"
+        # Rumus cicilan (anuitas)
+        if bunga_bulanan > 0:
+            cicilan_perbulan = jumlah_pengajuan * (
+                (bunga_bulanan * math.pow(1 + bunga_bulanan, tenor)) /
+                (math.pow(1 + bunga_bulanan, tenor) - 1)
+            )
+        else:
+            cicilan_perbulan = jumlah_pengajuan / tenor
 
-    # Hitung cicilan per bulan (rumus anuitas)
-    i = bunga_per_bulan
-    n = tenor
-    cicilan_perbulan = (jumlah_pengajuan * i) / (1 - (1 + i) ** (-n))
-    rasio_cicilan = cicilan_perbulan / uang_sisa
+        total_bunga = (cicilan_perbulan * tenor) - jumlah_pengajuan
+        total_pembayaran = cicilan_perbulan * tenor
+        sisa_uang = gaji - biaya_tetap
 
-    # Klasifikasi risiko
-    if rasio_cicilan <= 0.3:
-        kategori = "🟢 Aman"
-        pesan = "Pinjaman ini aman dan tidak membebani cashflow bulanan Anda."
-    elif rasio_cicilan <= 0.6:
-        kategori = "🟡 Hampir Aman"
-        pesan = "Masih bisa diajukan, tapi sebaiknya pertimbangkan kembali jumlah pinjaman Anda."
-    else:
-        kategori = "🔴 Risiko Tinggi"
-        pesan = "Pinjaman ini berisiko tinggi dan dapat mengganggu kestabilan keuangan Anda."
+        rasio_gaji = (cicilan_perbulan / gaji) * 100 if gaji > 0 else 0
+        rasio_sisa = (cicilan_perbulan / sisa_uang) * 100 if sisa_uang > 0 else 0
 
-    # Hitung total bunga dan rekomendasi
-    total_bayar = cicilan_perbulan * tenor
-    total_bunga = total_bayar - jumlah_pengajuan
-    pinjaman_aman = uang_sisa * 0.3 * tenor
-    pinjaman_maksimal = uang_sisa * 0.6 * tenor
-    pinjaman_risiko = uang_sisa * 0.8 * tenor
+        if rasio_sisa > 80:
+            risiko = "Tinggi"
+            warna = "#ef4444"
+            icon = "⚠️"
+        elif rasio_sisa > 50:
+            risiko = "Sedang"
+            warna = "#f59e0b"
+            icon = "🟠"
+        else:
+            risiko = "Rendah"
+            warna = "#10b981"
+            icon = "✅"
 
-    return render_template(
-        "result.html",
-        gaji=gaji,
-        biaya_tetap=biaya_tetap,
-        jumlah_pengajuan=jumlah_pengajuan,
-        tenor=tenor,
-        bunga_per_bulan=bunga_per_bulan,
-        label_bunga=label_bunga,
-        cicilan_perbulan=cicilan_perbulan,
-        uang_sisa=uang_sisa,
-        kategori=kategori,
-        pesan=pesan,
-        total_bayar=total_bayar,
-        total_bunga=total_bunga,
-        pinjaman_aman=pinjaman_aman,
-        pinjaman_maksimal=pinjaman_maksimal,
-        pinjaman_risiko=pinjaman_risiko
-    )
-
-
-# =========================
-# 📊 Halaman Penghitungan Pengeluaran
-# =========================
-@app.route("/pengeluaran")
-def pengeluaran():
-    return render_template("hitung.html")
-
-
-@app.route("/hitung_pengeluaran", methods=["POST"])
-def hitung_pengeluaran():
-    try:
-        pengeluaran_lalu = float(request.form.get("pengeluaran_lalu", 0))
-        tabungan = float(request.form.get("tabungan", 0))
-    except ValueError:
-        return render_template("hitung.html", total=None, error="⚠️ Masukkan angka yang valid!")
-
-    if pengeluaran_lalu < 0 or tabungan < 0:
-        return render_template("hitung.html", error="⚠️ Nilai tidak boleh negatif!")
-
-    total_pengeluaran = pengeluaran_lalu + tabungan
-    if total_pengeluaran < 0:
         return render_template(
-            "hitung.html",
-            error="⚠️ Data tidak logis: pengeluaran dan tabungan melebihi gaji!",
-            total=None
+            'result.html',
+            jenis_pinjaman=jenis_pinjaman,
+            gaji=format_currency(gaji),
+            biaya_tetap=format_currency(biaya_tetap),
+            jumlah_pengajuan=format_currency(jumlah_pengajuan),
+            bunga_tahunan=bunga_tahunan,
+            tenor=tenor,
+            tujuan=tujuan,
+            cicilan=format_currency(cicilan_perbulan),
+            total_bunga=format_currency(total_bunga),
+            total_pembayaran=format_currency(total_pembayaran),
+            sisa_uang=format_currency(sisa_uang),
+            rasio_gaji=round(rasio_gaji, 1),
+            rasio_sisa=round(rasio_sisa, 1),
+            risiko=risiko,
+            warna=warna,
+            icon=icon
         )
 
-    # Redirect ke halaman utama dengan total otomatis terisi
-    return redirect(url_for("home", biaya_tetap=total_pengeluaran))
+    except Exception as e:
+        return render_template('result.html', error=f"⚠️ Terjadi kesalahan: {str(e)}")
 
-
-# =========================
-# 🚀 Jalankan Aplikasi
-# =========================
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
