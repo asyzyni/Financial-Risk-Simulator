@@ -236,7 +236,7 @@
 
       <label>Tenor Pinjaman</label>
       <input type="number" id="tenorValueInput" name="tenor" value="12" min="1" max="360" required>
-      <small id="tenorHint">bulan (maks 360 untuk bank)</small>
+      <small id="tenorHint">bulan (maks 360 bulan untuk bank)</small>
 
       <button type="submit">Hitung Sekarang</button>
     </form>
@@ -291,7 +291,7 @@
       }else{
         label.textContent="Bunga Pinjaman (% per tahun)";
         tenorInput.max=360;
-        tenorHint.textContent="bulan (maks 360 untuk pinjaman bank)";
+        tenorHint.textContent="bulan (maks 360 bulan untuk pinjaman bank)";
       }
     }
 
